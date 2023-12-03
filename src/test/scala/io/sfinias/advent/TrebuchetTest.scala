@@ -19,5 +19,19 @@ class TrebuchetTest extends AnyWordSpec with Matchers {
 
       Trebuchet.getCalibration(list) shouldBe 142
     }
+
+    "calculate the second part of the example correctly" in {
+      val example = Seq(
+        "two1nine",
+        "eightwothree",
+        "abcone2threexyz",
+        "xtwone3four",
+        "4nineeightseven2",
+        "zoneight234",
+        "7pqrstsixteen",
+      )
+
+      Trebuchet.getNewCalibration(example) shouldBe 281
+    }
   }
 }
