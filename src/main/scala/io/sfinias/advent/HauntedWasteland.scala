@@ -29,29 +29,42 @@ object HauntedWasteland {
   }
 
 
-  def calculateStepsForAllPaths(input: Seq[String]): Int = {
-
+  def calculateStepsForAllPaths(input: Seq[String]): Long = {
     val path = input.head
     val map = input.map(roadPattern.findAllMatchIn)
       .flatMap(_.map(matched => matched.group(1) -> (matched.group(2), matched.group(3))))
       .toMap
 
-    var currentPoints = map.keys.map(startingPointPattern.findAllMatchIn).flatMap(_.map(_.group(1))).toSet
-    var i = 0
-    var stepsTaken = 0
-    while (!currentPoints.forall(_.endsWith("Z")) || i < path.length) {
-      if (i == path.length) i = 0
-      stepsTaken += 1
-      val turn = path(i)
-      val newPoints = for {
-        point <- currentPoints
-        newPoint = if (turn == 'L') map(point)._1 else map(point)._2
-      } yield newPoint
-      currentPoints = newPoints
-      i += 1
+    val startPoints = map.keys.map(startingPointPattern.findAllMatchIn).flatMap(_.map(_.group(1))).toSet
+    val loops = for (start <- startPoints) yield {
+      var i = 0
+      var current = start
+      var stepsTaken = 0
+      while (!(current.endsWith("Z") && i == path.length)) {
+        if (i == path.length) i = 0
+        stepsTaken += 1
+        val turn = path(i)
+        current = if (turn == 'L') map(current)._1 else map(current)._2
+        i += 1
+      }
+      stepsTaken
     }
-    stepsTaken
+    loops.map(_.toLong).reduce(lcm)
   }
+
+  private def gcd(x: Long, y: Long): Long = {
+    var a = x
+    var b = y
+    while (b != 0) {
+      val temp = b
+      b = a % b
+      a = temp
+    }
+    a
+  }
+
+  private def lcm(x: Long, y: Long): Long =
+    x * y / gcd(x, y)
 
 
   def main(args: Array[String]): Unit =
